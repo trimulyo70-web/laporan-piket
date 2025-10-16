@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Harian Guru Piket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
+    <header class="bg-white shadow-lg border-b-4 border-blue-600">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-blue-600 text-white p-3 rounded-full">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Laporan Harian Guru Piket</h1>
+                        <h2 class="text-lg font-semibold text-blue-700">SMA MA'ARIF NU 1 AJIBARANG</h2>
+                        <p class="text-gray-600">Sistem Monitoring Kehadiran Sekolah</p>
+                        <p class="text-sm text-blue-600 mt-1">🌐 Akses Online untuk Semua Guru Piket</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-lg font-semibold text-blue-600" id="currentDateTime"></div>
+                    <div class="text-sm text-gray-500">Waktu Real-time</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- Form Input Tanggal dan Waktu -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                </svg>
+                Informasi Laporan
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Laporan</label>
+                    <input type="date" id="reportDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="reportTime" class="block text-sm font-medium text-gray-700 mb-2">Waktu Laporan</label>
+                    <input type="time" id="reportTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="picketTeacher" class="block text-sm font-medium text-gray-700 mb-2">Nama Guru Piket</label>
+                    <input type="text" id="picketTeacher" placeholder="Masukkan nama guru piket" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+        </div>
+
+        <!-- Guru Tidak Hadir -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Guru Tidak Hadir
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="absentTeacher" class="block text-sm font-medium text-gray-700 mb-2">Nama Guru</label>
+                    <input type="text" id="absentTeacher" placeholder="Nama guru yang tidak hadir" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="teacherTask" class="block text-sm font-medium text-gray-700 mb-2">Tugas yang Diberikan</label>
+                    <input type="text" id="teacherTask" placeholder="Tugas untuk siswa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            <button onclick="addAbsentTeacher()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+                Tambah Guru Tidak Hadir
+            </button>
+            <div id="absentTeachersList" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- Siswa Tidak Hadir -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                Siswa Tidak Hadir
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label for="studentClass" class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                    <select id="studentClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Kelas</option>
+                        <option value="X-1">X-1</option>
+                        <option value="X-2">X-2</option>
+                        <option value="XI-1">XI-1</option>
+                        <option value="XI-2">XI-2</option>
+                        <option value="XII-1">XII-1</option>
+                        <option value="XII-2">XII-2</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="studentName" class="block text-sm font-medium text-gray-700 mb-2">Nama Siswa</label>
+                    <input type="text" id="studentName" placeholder="Nama siswa yang tidak hadir" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="absentReason" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                    <select id="absentReason" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Keterangan</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Tanpa Keterangan">Tanpa Keterangan</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="addAbsentStudent()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+                Tambah Siswa Tidak Hadir
+            </button>
+            <div id="absentStudentsList" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- Catatan Guru Piket -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"/>
+                </svg>
+                Catatan Guru Piket
+            </h2>
+            <textarea id="picketNotes" rows="4" placeholder="Tulis catatan penting hari ini..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+            <button onclick="saveNotes()" class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Simpan Catatan
+            </button>
+        </div>
+
+        <!-- Kolaborasi -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                </svg>
+                Kolaborasi & Komunikasi
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="collaborateWith('kepala-sekolah')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors duration-200 flex flex-col items-center">
+                    <svg class="w-8 h-8 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="font-semibold">Kepala Sekolah</span>
+                    <span class="text-sm opacity-90">Lapor ke Kepala Sekolah</span>
+                </button>
+                <button onclick="collaborateWith('waka-kurikulum')" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-lg transition-colors duration-200 flex flex-col items-center">
+                    <svg class="w-8 h-8 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+                    </svg>
+                    <span class="font-semibold">Waka Kurikulum</span>
+                    <span class="text-sm opacity-90">Koordinasi Kurikulum</span>
+                </button>
+                <button onclick="collaborateWith('guru-lain')" class="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-lg transition-colors duration-200 flex flex-col items-center">
+                    <svg class="w-8 h-8 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    <span class="font-semibold">Guru Lain</span>
+                    <span class="text-sm opacity-90">Diskusi dengan Rekan</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi -->
+        <div class="flex flex-wrap gap-4 justify-center">
+            <button onclick="generateReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+                Buat Laporan
+            </button>
+            <button onclick="downloadPDF()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                Download PDF
+            </button>
+            <button onclick="clearAll()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 012 0v4a1 1 0 11-2 0V7zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Bersihkan Semua
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal Kolaborasi -->
+    <div id="collaborationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 m-4 max-w-md w-full fade-in">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-4"></h3>
+            <textarea id="collaborationMessage" rows="4" placeholder="Tulis pesan atau laporan..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none mb-4"></textarea>
+            <div class="flex gap-3">
+                <button onclick="sendCollaboration()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">Kirim</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifikasi -->
+    <div id="notificationModal" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden fade-in z-50">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <script>
+        let absentTeachers = [];
+        let absentStudents = [];
+        let currentCollaborationType = '';
+
+        // Update waktu real-time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('id-ID', options);
+        }
+
+        // Set tanggal dan waktu saat ini
+        function setCurrentDateTime() {
+            const now = new Date();
+            document.getElementById('reportDate').value = now.toISOString().split('T')[0];
+            document.getElementById('reportTime').value = now.toTimeString().slice(0, 5);
+        }
+
+        // Tambah guru tidak hadir
+        function addAbsentTeacher() {
+            const teacherName = document.getElementById('absentTeacher').value.trim();
+            const task = document.getElementById('teacherTask').value.trim();
+            
+            if (!teacherName) {
+                showNotification('Mohon masukkan nama guru', 'error');
+                return;
+            }
+
+            const teacher = {
+                id: Date.now(),
+                name: teacherName,
+                task: task || 'Tidak ada tugas khusus'
+            };
+
+            absentTeachers.push(teacher);
+            renderAbsentTeachers();
+            
+            document.getElementById('absentTeacher').value = '';
+            document.getElementById('teacherTask').value = '';
+            showNotification('Guru tidak hadir berhasil ditambahkan');
+        }
+
+        // Render daftar guru tidak hadir
+        function renderAbsentTeachers() {
+            const container = document.getElementById('absentTeachersList');
+            container.innerHTML = '';
+
+            absentTeachers.forEach(teacher => {
+                const div = document.createElement('div');
+                div.className = 'bg-red-50 border border-red-200 rounded-lg p-4 flex justify-between items-start fade-in';
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold text-red-800">${teacher.name}</h4>
+                        <p class="text-red-600 text-sm">Tugas: ${teacher.task}</p>
+                    </div>
+                    <button onclick="removeAbsentTeacher(${teacher.id})" class="text-red-600 hover:text-red-800 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Hapus guru tidak hadir
+        function removeAbsentTeacher(id) {
+            absentTeachers = absentTeachers.filter(teacher => teacher.id !== id);
+            renderAbsentTeachers();
+            showNotification('Data guru tidak hadir dihapus');
+        }
+
+        // Tambah siswa tidak hadir
+        function addAbsentStudent() {
+            const className = document.getElementById('studentClass').value;
+            const studentName = document.getElementById('studentName').value.trim();
+            const reason = document.getElementById('absentReason').value;
+            
+            if (!className || !studentName || !reason) {
+                showNotification('Mohon lengkapi semua data siswa', 'error');
+                return;
+            }
+
+            const student = {
+                id: Date.now(),
+                class: className,
+                name: studentName,
+                reason: reason
+            };
+
+            absentStudents.push(student);
+            renderAbsentStudents();
+            
+            document.getElementById('studentClass').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('absentReason').value = '';
+            showNotification('Siswa tidak hadir berhasil ditambahkan');
+        }
+
+        // Render daftar siswa tidak hadir
+        function renderAbsentStudents() {
+            const container = document.getElementById('absentStudentsList');
+            container.innerHTML = '';
+
+            absentStudents.forEach(student => {
+                const div = document.createElement('div');
+                div.className = 'bg-orange-50 border border-orange-200 rounded-lg p-4 flex justify-between items-start fade-in';
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold text-orange-800">${student.name} - ${student.class}</h4>
+                        <p class="text-orange-600 text-sm">Keterangan: ${student.reason}</p>
+                    </div>
+                    <button onclick="removeAbsentStudent(${student.id})" class="text-orange-600 hover:text-orange-800 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Hapus siswa tidak hadir
+        function removeAbsentStudent(id) {
+            absentStudents = absentStudents.filter(student => student.id !== id);
+            renderAbsentStudents();
+            showNotification('Data siswa tidak hadir dihapus');
+        }
+
+        // Simpan catatan
+        function saveNotes() {
+            const notes = document.getElementById('picketNotes').value.trim();
+            if (!notes) {
+                showNotification('Mohon tulis catatan terlebih dahulu', 'error');
+                return;
+            }
+            showNotification('Catatan berhasil disimpan');
+        }
+
+        // Kolaborasi
+        function collaborateWith(type) {
+            currentCollaborationType = type;
+            const modal = document.getElementById('collaborationModal');
+            const title = document.getElementById('modalTitle');
+            
+            const titles = {
+                'kepala-sekolah': 'Laporan ke Kepala Sekolah',
+                'waka-kurikulum': 'Koordinasi dengan Waka Kurikulum',
+                'guru-lain': 'Diskusi dengan Guru Lain'
+            };
+            
+            title.textContent = titles[type];
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Kirim kolaborasi
+        function sendCollaboration() {
+            const message = document.getElementById('collaborationMessage').value.trim();
+            if (!message) {
+                showNotification('Mohon tulis pesan terlebih dahulu', 'error');
+                return;
+            }
+            
+            closeModal();
+            showNotification('Pesan berhasil dikirim');
+            document.getElementById('collaborationMessage').value = '';
+        }
+
+        // Tutup modal
+        function closeModal() {
+            const modal = document.getElementById('collaborationModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Generate laporan
+        function generateReport() {
+            const date = document.getElementById('reportDate').value;
+            const time = document.getElementById('reportTime').value;
+            const teacher = document.getElementById('picketTeacher').value.trim();
+            const notes = document.getElementById('picketNotes').value.trim();
+            
+            if (!date || !time || !teacher) {
+                showNotification('Mohon lengkapi informasi laporan', 'error');
+                return;
+            }
+
+            // Simulasi generate laporan
+            showNotification('Laporan harian berhasil dibuat dan disimpan');
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            const date = document.getElementById('reportDate').value;
+            const time = document.getElementById('reportTime').value;
+            const teacher = document.getElementById('picketTeacher').value.trim();
+            const notes = document.getElementById('picketNotes').value.trim();
+            
+            if (!date || !time || !teacher) {
+                showNotification('Mohon lengkapi informasi laporan terlebih dahulu', 'error');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('LAPORAN HARIAN GURU PIKET', 105, 20, { align: 'center' });
+            doc.setFontSize(14);
+            doc.text('SMA MA\'ARIF NU 1 AJIBARANG', 105, 30, { align: 'center' });
+            
+            // Garis pembatas
+            doc.line(20, 35, 190, 35);
+            
+            // Informasi laporan
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('Tanggal: ' + formatDate(date), 20, 50);
+            doc.text('Waktu: ' + time, 20, 60);
+            doc.text('Guru Piket: ' + teacher, 20, 70);
+            
+            let yPos = 85;
+            
+            // Guru tidak hadir
+            if (absentTeachers.length > 0) {
+                doc.setFont(undefined, 'bold');
+                doc.text('GURU TIDAK HADIR:', 20, yPos);
+                yPos += 10;
+                doc.setFont(undefined, 'normal');
+                
+                absentTeachers.forEach((teacher, index) => {
+                    doc.text(`${index + 1}. ${teacher.name}`, 25, yPos);
+                    yPos += 7;
+                    doc.text(`   Tugas: ${teacher.task}`, 25, yPos);
+                    yPos += 10;
+                });
+            } else {
+                doc.setFont(undefined, 'bold');
+                doc.text('GURU TIDAK HADIR: Tidak ada', 20, yPos);
+                yPos += 15;
+            }
+            
+            // Siswa tidak hadir
+            if (absentStudents.length > 0) {
+                doc.setFont(undefined, 'bold');
+                doc.text('SISWA TIDAK HADIR:', 20, yPos);
+                yPos += 10;
+                doc.setFont(undefined, 'normal');
+                
+                absentStudents.forEach((student, index) => {
+                    doc.text(`${index + 1}. ${student.name} (${student.class}) - ${student.reason}`, 25, yPos);
+                    yPos += 7;
+                });
+            } else {
+                doc.setFont(undefined, 'bold');
+                doc.text('SISWA TIDAK HADIR: Tidak ada', 20, yPos);
+                yPos += 15;
+            }
+            
+            yPos += 10;
+            
+            // Catatan
+            if (notes) {
+                doc.setFont(undefined, 'bold');
+                doc.text('CATATAN GURU PIKET:', 20, yPos);
+                yPos += 10;
+                doc.setFont(undefined, 'normal');
+                
+                const splitNotes = doc.splitTextToSize(notes, 170);
+                doc.text(splitNotes, 20, yPos);
+                yPos += splitNotes.length * 7 + 15;
+            }
+            
+            // Tanda tangan
+            yPos = Math.max(yPos, 220);
+            
+            doc.text('Ajibarang, ' + formatDate(date), 130, yPos);
+            yPos += 20;
+            
+            // Kolom tanda tangan
+            doc.text('Mengetahui,', 30, yPos);
+            doc.text('Petugas Piket,', 130, yPos);
+            yPos += 10;
+            
+            doc.text('Kepala Sekolah', 30, yPos);
+            doc.text('Guru Piket', 130, yPos);
+            yPos += 30;
+            
+            // Garis untuk tanda tangan
+            doc.line(20, yPos, 80, yPos);
+            doc.line(120, yPos, 180, yPos);
+            yPos += 10;
+            
+            doc.text('(_____________________)', 20, yPos);
+            doc.text('(' + teacher + ')', 120, yPos);
+            
+            // Download file
+            const fileName = `Laporan_Piket_${date.replace(/-/g, '')}.pdf`;
+            doc.save(fileName);
+            
+            showNotification('File PDF berhasil didownload');
+        }
+        
+        // Format tanggal untuk tampilan
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        // Bersihkan semua data
+        function clearAll() {
+            absentTeachers = [];
+            absentStudents = [];
+            
+            document.getElementById('reportDate').value = '';
+            document.getElementById('reportTime').value = '';
+            document.getElementById('picketTeacher').value = '';
+            document.getElementById('picketNotes').value = '';
+            
+            renderAbsentTeachers();
+            renderAbsentStudents();
+            
+            showNotification('Semua data berhasil dibersihkan');
+        }
+
+        // Tampilkan notifikasi
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notificationModal');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            
+            if (type === 'error') {
+                notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg fade-in z-50';
+            } else {
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg fade-in z-50';
+            }
+            
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setCurrentDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Event listener untuk modal
+            document.getElementById('collaborationModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f39e48d461fe08',t:'MTc2MDU3NjQxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
